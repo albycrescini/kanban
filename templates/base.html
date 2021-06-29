@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" integrity="undefined" crossorigin="anonymous">
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/album/">
+    <title>{% block title %} {% endblock %}</title>
+    {% block head %} {% endblock %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Menu</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" id="home_ref" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="addboard_ref" href="/add_board">Aggiungi colonna</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="addtile_ref" href="/add_tile">Aggiungi tile</a>
+              </li>
+              <li class="nav-item" id="status_btn"></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+</head>
+<body style="background-color:rgb(241, 239, 239);">
+    {% block board_menu %} {% endblock %}
+    {% block content %} {% endblock %}
+    {% block footer %} {% endblock %}
+</body>
+</html>

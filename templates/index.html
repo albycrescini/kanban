@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% block title %}Home Page{% endblock %}
+
+{% block head %}
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Album example · Bootstrap v5.0</title>
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" href="/docs/5.0/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+    <link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="manifest" href="/docs/5.0/assets/img/favicons/manifest.json">
+    <link rel="mask-icon" href="/docs/5.0/assets/img/favicons/safari-pinned-tab.svg" color="#7952b3">
+    <link rel="icon" href="/docs/5.0/assets/img/favicons/favicon.ico">
+    <meta name="theme-color" content="#7952b3">
+    <style>
+      .thirdscale {
+        width: 33.33%;
+        float: left;
+        height: 50px;
+      }
+
+      .column {
+        float: left;
+        width: 33.33%;
+      }
+
+      .column-left{ 
+        float: left;
+        margin-top: 30px;
+      }
+
+      .column-center{ 
+        display: inline-block;
+        margin-right: 13px;
+        margin-left: 13px;
+        margin-top: 30px;
+      }
+
+      .column-right{ 
+        float: right;
+        margin-top: 30px;
+      }
+
+      .board-item {
+        padding-top: 12.5px;
+        text-align: center;
+        color: rgb(255, 255, 255);
+      }
+
+      .card {
+        margin-top: 15px;
+      }
+
+      .plus {
+        margin-top: 15px;
+        text-align: center;
+      }
+
+      .container {
+        display: flex !important;
+        justify-content: space-between !important;
+      }
+
+      .container > div {
+        width: 33% !important;
+      }
+
+      .black-bg {
+        background-color:#3b3b3b;
+        display: flex;
+        align-items: center;
+      }
+
+      .bottom {
+        padding: 7px;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+    </style>
+{% endblock %}
+
+{% block board_menu %}
+<div class="black-bg">
+  <button id="next_tiles" onclick="button_pressed(-1);" style="position: absolute; left: 0; margin-left: 15px;" class="btn btn-primary btn-sm">Indietro</button>
+  <button id="next_tiles" onclick="button_pressed(1);" style="position: absolute; right: 0; margin-right: 15px;" class="btn btn-primary btn-sm">Avanti</button>
+  <div class="container">
+    <div class="thirdscale" >
+      <div class="board-item" id="column0"></div>
+      <input type="hidden" id="status0" name="status0">
+    </div>
+    <div class="thirdscale">
+      <div class="board-item" id="column1"></div>
+      <input type="hidden" id="status1" name="status1">
+    </div>
+    <div class="thirdscale">
+      <div class="board-item" id="column2"></div>
+      <input type="hidden" id="status2" name="status2">
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="column-left" id="board0"></div>
+  <div class="column-center" id="board1" ></div>
+  <div class="column-right" id="board2" ></div>
+</div> 
+{% endblock %}
+{% block footer %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  document.getElementById("home_ref").classList.add('active');
+  var swap = 0;
+  var board = 0;
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  if(urlParams.get('status'))
+    status = urlParams.get('status');
+  else
+    status = 1;
+
+  function button_pressed(value) {
+    update_board(value);
+    update_tiles();
+  }
+
+  $(document).ready(function(){
+    update_board(0);
+    update_tiles();
+  });
+
+  function filter_board(data, status) {
+    const array = []
+    for(var i = 0; i < data.length; i++) {
+      if(data[i].status == status)
+        array.push(data[i])
+    }
+    return array;
+  }
+
+  function update_board(value) {
+    $.getJSON("/api/v1/get_boards", function(data) {
+      data = filter_board(data, status);
+
+      if(status == 0) {
+        document.getElementById("status_btn").innerHTML = '<a class="nav-link btn button btn btn-success" style="position: absolute; right: 0; margin-right: 15px;" href="/?status=1">Mostra attive</a>'
+      }
+      else  {
+        document.getElementById("status_btn").innerHTML = '<a class="nav-link btn button btn btn-warning" style="position: absolute; right: 0; margin-right: 15px;" href="/?status=0">Mostra archiviate</a>'
+      }
+      if (swap == 0 && value < 0)
+        swap = 0;
+      else
+        swap += value;
+          
+      if(data[0 + 3 * swap]) {
+        if(data[0 + 3 * swap] !== "undefined") {
+          document.getElementById("column0").innerText = data[0 + 3 * swap].title;
+        }
+        else {
+          document.getElementById("column0").innerHTML = "";
+          document.getElementById("board0").innerHTML = "";
+        }
+
+        if(typeof data[1 + 3 * swap] !== "undefined") {
+          document.getElementById("column1").innerText = data[1 + 3 * swap].title;
+        }
+        else {
+          document.getElementById("column1").innerHTML = "";
+          document.getElementById("board1").innerHTML = "";
+        }
+        if(typeof data[2 + 3 * swap] !== "undefined") {
+          document.getElementById("column2").innerText = data[2 + 3 * swap].title;
+        }
+        else if(typeof data[1 + 3 * swap] === 'undefined') {
+          document.getElementById("column2").innerHTML = "";
+          document.getElementById("board2").innerHTML = "";
+          swap -= 1;
+        }
+      } 
+  })}
+
+  function update_tiles() {
+    setTimeout(function() {
+      for(let i = 0; i < 3; i++) {
+      const board = document.getElementById("column" + i).innerText; // prendo il nome della board per mostrare le tile
+      $.getJSON("/api/v1/get_tiles?board=" + board, function(data) {
+        document.getElementById("board" + i).innerHTML = ""; // pulisce valori precedenti presenti nella colonna
+        $.each(data, function(key) {
+          var tile = data[key];
+          if(tile["category"] == 1)
+            style = 'style="background-color: #d2dae2"'
+          else
+            style = ''
+          if (tile['media_type'] == 0) {
+            document.getElementById("board" + i).innerHTML += '<div class="card shadow-sm"'+ style +'>' + 
+                                '<div class="card-body">' + 
+                                '<h2 class="card-text">' + tile['title'] + '</h2>' +
+                                '<p class="card-text">' + tile['content'] + '</p>' +
+                                '<div class="d-flex justify-content-between align-items-center">' +
+                                '<div class="btn-group">' +
+                                '<a href="/edit_tile?id=' + tile['id'] + '"><button type="button" class="btn btn-sm btn-outline-secondary">Modifica</button></a><br>' +
+                                '<a><button type="button" style="margin-left: 5px" class="btn btn-sm btn-outline-secondary" onclick="delete_tile('+ tile['id'] +')">Elimina</button></a>' +
+                                '</div>' +
+                                '<small class="text-muted">Autore: '+ tile['author'] +'</small>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' ;
+                                }
+          else {
+            document.getElementById("board" + i).innerHTML += '<div class="card shadow-sm"'+ style +'>' + 
+                                '<img src="data:image/png;base64, ' + tile['content'] + '" class="bd-placeholder-img card-img-top" alt="Red dot" />' +
+                                '<div class="card-body">' + 
+                                '<h2 class="card-text">' + tile['title'] + '</h2>' +
+                                '<div class="d-flex justify-content-between align-items-center">' +
+                                '<div class="btn-group">' +
+                                '<a href="/edit_tile?id=' + tile['id'] + '"><button type="button" class="btn btn-sm btn-outline-secondary">Modifica</button></a><br>' +
+                                '<a><button type="button" style="margin-left: 5px" class="btn btn-sm btn-outline-secondary" onclick="delete_tile('+ tile['id'] +')">Elimina</button></a>' +
+                                '</div>' +
+                                '<small class="text-muted">Autore: '+ tile['author'] +'</small>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' ;
+          } 
+        })
+        if(board != "") {
+          buttons = '<div id="rename_board"><button type="button" class="btn btn-light btn-sm bottom" onClick="rename_board(\'' + i + '\')">Rinomina ✏️</button></div>'
+          if(status == 1) {
+            buttons =  '<button type="button" class="btn btn-primary btn-sm bottom" onclick="add_tile(' + i + ')">Aggiungi 📩</button>' + buttons +
+                        '<button type="button" class="btn btn-light btn-sm bottom" onClick="delete_board(\'' + board + '\')">Rimuovi ❌</button>' +
+                        '<button type="button" class="btn btn-warning btn-sm bottom" onClick="archive_board(\'' + board + '\')">Archivia 🗄️</button>';
+          }
+          else {
+            buttons += '<button type="button" class="btn btn-success btn-sm bottom" onClick="activate_board(\'' + board + '\')">Attiva 📤</button>';
+          }
+
+          document.getElementById("board" + i).innerHTML += '<div>'+ buttons + '</div>';
+        }});
+      }
+    }, 100);
+  }
+    
+  function add_tile(i) {
+    var board = document.getElementById("column" + i).innerText;
+    location.href = "add_tile?board=" + board;
+  }
+
+  function delete_tile(i) {
+    $.ajax({
+    url: '/api/v1/delete_tile?id='+i,
+    type: 'DELETE',
+    success: function(result) {
+       window.location.href = "/";
+    }
+  });
+  }
+
+  function delete_board(i) {
+    $.ajax({
+    url: '/api/v1/delete_board?name='+i,
+    type: 'DELETE',
+    success: function(result) {
+       window.location.href = "/";
+    },
+    error: function(xhr, status, error) {
+      alert(xhr.responseText);
+    } 
+  });
+  }
+
+  function archive_board(i) {
+    $.ajax({
+    url: '/api/v1/archive_board?name='+i,
+    type: 'POST',
+    success: function(result) {
+       window.location.href = "/";
+    },
+    error: function(xhr, status, error) {
+      alert(xhr.responseText);
+    } 
+  });
+  }
+
+  function activate_board(i) {
+    $.ajax({
+    url: '/api/v1/activate_board?name='+i,
+    type: 'POST',
+    success: function(result) {
+       window.location.href = "/";
+    },
+    error: function(xhr, status, error) {
+      alert(xhr.responseText);
+    } 
+  });
+  }
+  
+  function rename_board(i) {
+    document.getElementById('board' + i).innerHTML +=  '<input type="text" class="form-control bottom" name="name" id="new_board" placeholder="Nuovo nome">' +
+                                                          '<input type="hidden" name="board" id="old_board" value="' + document.getElementById('column' + i).innerText + '"">' +
+                                                          '<button type="button" onclick="rename_board_request()" class="btn btn-primary bottom">Modifica</button>';
+  }
+
+  function rename_board_request() {
+    const old_name = document.getElementById("old_board").value;
+    const new_name = document.getElementById("new_board").value;
+
+    $.ajax({
+    url: '/api/v1/rename_board?old='+old_name+'&new='+new_name,
+    type: 'PUT',
+    success: function(result) {
+       window.location.href = "/";
+    },
+    error: function(xhr, status, error) {
+      alert(xhr.responseText);
+    } 
+  });
+  }
+</script>
+{% endblock %}
